@@ -44,6 +44,9 @@ SETTINGS = {
     "Glow Strength": ("glow_strength", "glow_strength", "Fac"),
     "Glow Threshold": ("glow_threshold", None, "Fac"),
     "Glow Color": (None, "glow_color", "Color"),
+    "Colour Jitter": ("color_jitter", None, "Fac"),
+    "Colour Drift": ("color_drift", None, "Fac"),
+    "Stroke Angle": ("stroke_angle", None, "Fac"),
 }
 
 
@@ -148,7 +151,7 @@ def _light_term(N, L, normal_out, light_scale, x, y, tag, ambient=None):
 
 def build_toon_group(rebuild=False):
     ng = bpy.data.node_groups.get(TOON_GROUP)
-    if ng and not rebuild and ng.get(TAG + "_ver") == 8:
+    if ng and not rebuild and ng.get(TAG + "_ver") == 9:
         return ng
     if ng is None:
         ng = bpy.data.node_groups.new(TOON_GROUP, "ShaderNodeTree")
@@ -159,7 +162,7 @@ def build_toon_group(rebuild=False):
     iface(ng, "Shader", "OUTPUT", "NodeSocketShader")
     iface(ng, "Color", "OUTPUT", "NodeSocketColor")
     iface(ng, "Light Mask", "OUTPUT", "NodeSocketFloat")
-    ng[TAG + "_ver"] = 8
+    ng[TAG + "_ver"] = 9
 
     N, L = ng.nodes, ng.links
     gi = new(N, "NodeGroupInput", (-2400, 0))
@@ -208,7 +211,9 @@ def build_toon_group(rebuild=False):
     stretch.inputs[1].default_value = 1.0
     L.new(I("Stroke Stretch"), stretch.inputs[2])
     L.new(stretch.outputs[0], mp.inputs["Scale"])
-    mp.inputs["Rotation"].default_value = (0.0, 0.52, 0.0)  # ~30 deg diagonal strokes
+    rot = new(N, "ShaderNodeCombineXYZ", (-2200, -700), "Stroke Rotation")   # brush direction
+    L.new(I("Stroke Angle"), rot.inputs[1])
+    L.new(rot.outputs[0], mp.inputs["Rotation"])
 
     nscale = math(N, (-1850, -500), "MULTIPLY", b=0.5)
     L.new(I("Stroke Scale"), nscale.inputs[0])
@@ -310,6 +315,40 @@ def build_toon_group(rebuild=False):
     toon_m = mix(N, (750, -500), "MIX", label="Toon Mix")
     f, a, b, toon = mix_io(toon_m)
     L.new(mask, f); L.new(tint_out, a); L.new(lit_out, b)
+
+    # ---- colour jitter: every dab gets its own small hue / saturation / value shift,
+    #      plus large soft patches of colour drift (like a painter re-mixing the colour)
+    jsep = new(N, "ShaderNodeSeparateColor", (300, -1500), "Dab Random")
+    L.new(vor.outputs["Color"], jsep.inputs[0])
+    drift = new(N, "ShaderNodeTexNoise", (100, -1750), "Colour Drift Noise")
+    drift.inputs["Detail"].default_value = 1.0
+    L.new(wcoord.outputs[0], drift.inputs["Vector"])
+    dsc_ = math(N, (-60, -1800), "MULTIPLY", b=0.07); L.new(I("Stroke Scale"), dsc_.inputs[0])
+    L.new(dsc_.outputs[0], drift.inputs["Scale"])
+    dfs = new(N, "ShaderNodeSeparateColor", (300, -1750)); L.new(drift.outputs["Color"], dfs.inputs[0])
+
+    def _centred(sock_, k, amt, loc):
+        a = math(N, loc, "SUBTRACT", b=0.5); L.new(sock_, a.inputs[0])
+        b = math(N, (loc[0] + 120, loc[1]), "MULTIPLY", b=k); L.new(a.outputs[0], b.inputs[0])
+        c = math(N, (loc[0] + 240, loc[1]), "MULTIPLY"); L.new(b.outputs[0], c.inputs[0]); L.new(amt, c.inputs[1])
+        return c.outputs[0]
+
+    def _sum(a_, b_, loc, base):
+        t = math(N, loc, "ADD"); L.new(a_, t.inputs[0]); L.new(b_, t.inputs[1])
+        u = math(N, (loc[0] + 120, loc[1]), "ADD", b=base); L.new(t.outputs[0], u.inputs[0])
+        return u.outputs[0]
+
+    CJ, CD = I("Colour Jitter"), I("Colour Drift")
+    jh = _sum(_centred(jsep.outputs[1], 0.14, CJ, (450, -1450)), _centred(dfs.outputs[0], 0.16, CD, (450, -1750)),
+              (850, -1550), 0.5)
+    js = _sum(_centred(jsep.outputs[2], 0.6, CJ, (450, -1600)), _centred(dfs.outputs[2], 0.3, CD, (450, -1900)),
+              (850, -1700), 1.0)
+    jv = _sum(_centred(jsep.outputs[0], 0.22, CJ, (450, -2050)), _centred(dfs.outputs[1], 0.3, CD, (450, -2200)),
+              (850, -1850), 1.0)
+    jit = new(N, "ShaderNodeHueSaturation", (900, -650), "Colour Jitter")
+    L.new(toon, jit.inputs["Color"])
+    L.new(jh, jit.inputs["Hue"]); L.new(js, jit.inputs["Saturation"]); L.new(jv, jit.inputs["Value"])
+    toon = jit.outputs[0]
 
     # ---- rim (on lit side, using painted normal) -----------------------
     lw = new(N, "ShaderNodeLayerWeight", (600, -1000))

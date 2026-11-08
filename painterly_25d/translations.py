@@ -109,6 +109,29 @@ _UI = {
     "Contrast": ("コントラスト", "对比度"),
     "Warmth": ("暖かさ", "色温"),
     "Saturation": ("彩度", "饱和度"),
+    # 1.1: media + variation
+    "Medium": ("画材", "画材"),
+    "Oil Paint": ("油絵", "油画"),
+    "Gouache": ("ガッシュ", "水粉"),
+    "Watercolour": ("水彩", "水彩"),
+    "Crayon": ("クレヨン", "蜡笔"),
+    "Coloured Pencil": ("色鉛筆", "彩色铅笔"),
+    "Anime Cel": ("アニメ塗り", "动画赛璐璐"),
+    "Variation": ("バリエーション", "变化"),
+    "Stroke Angle": ("筆の向き", "笔触方向"),
+    "Colour Jitter": ("色のゆらぎ", "颜色抖动"),
+    "Colour Drift": ("色むら", "颜色斑驳"),
+    "Colour variation": ("色のばらつき", "颜色变化"),
+    "Ink From Object Colour": ("線にモデルの色を使う", "线条使用物体颜色"),
+    "Shadow pattern": ("影の模様", "阴影图案"),
+    "Shadow Pattern": ("影の模様", "阴影图案"),
+    "Dots": ("網点", "网点"),
+    "Hatching": ("斜線", "排线"),
+    "Cross-hatching": ("クロスハッチング", "交叉排线"),
+    "Edge Darkening": ("にじみの縁", "边缘积色"),
+    "Wet Wobble (px @1920)": ("にじみのゆらぎ（px @1920）", "湿边抖动（px @1920）"),
+    "Granulation": ("顔料の粒状感", "颜料颗粒沉淀"),
+    "Paper Tooth": ("紙の凹凸", "纸面纹理"),
     "Line Radius": ("線の半径", "线条半径"),
     "Line Jitter": ("線のゆらぎ", "线条抖动"),
 }
@@ -123,6 +146,7 @@ _OPS = {
     "Add Sketch Lines": ("スケッチ線を追加", "添加素描线"),
     "Reset to Defaults": ("初期値にリセット", "恢复默认值"),
     "Fit to Scene": ("シーンに合わせる", "适配场景"),
+    "Shuffle": ("シャッフル", "随机一下"),
 }
 
 

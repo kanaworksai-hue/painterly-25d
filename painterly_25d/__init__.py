@@ -13,13 +13,16 @@
 
 bl_info = {
     "name": "Painterly 2.5D",
-    "author": "Tokyo AI Visuals",
-    "version": (1, 0, 0),
+    "author": "Tokyo AI Visuals LLC (KanaWorks_AI)",
+    "version": (1, 1, 0),
     "blender": (5, 0, 0),
     "location": "3D Viewport > Sidebar (N) > Painterly",
     "description": "Hand-painted 2.5D toon shading, hand-drawn outlines and painterly compositing",
     "category": "Render",
 }
+
+import math as _pm
+import random
 
 import bpy
 from bpy.props import (BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty,
@@ -102,16 +105,127 @@ PRESETS = {
 }
 
 
-def apply_preset(self, context):
-    sc = _scene(self)
+# --------------------------------------------------------------------------
+# media: how the paint is applied (presets above set colour and mood).
+# Every medium sets the same keys, so switching back and forth is lossless.
+# --------------------------------------------------------------------------
+_OIL = dict(kuwahara_mix=0.75, kuwahara_size=6, kuwahara_clean=4, softness=0.05, stroke_strength=0.7,
+            stroke_stretch=0.35, base_stroke=0.2, dab_variation=0.08, paint_grain=0.04,
+            color_jitter=0.25, color_drift=0.15, edge_darken=0.0, paint_wobble=0.0, granulation=0.0,
+            paper_tooth=0.0, shadow_pattern="DOTS", dots_strength=0.12, dots_size=5.0,
+            ink_from_object=0.45, outline_jitter=0.7, paper_strength=0.15)
+MEDIA = {
+    "OIL": dict(_OIL),
+    "GOUACHE": {**_OIL, **dict(kuwahara_mix=0.55, kuwahara_size=5, softness=0.03, stroke_strength=0.45,
+                               base_stroke=0.1, color_jitter=0.18, color_drift=0.12, edge_darken=0.18,
+                               paint_wobble=0.6, dots_strength=0.0, ink_from_object=0.6, paper_strength=0.2)},
+    "WATERCOLOR": {**_OIL, **dict(kuwahara_mix=0.35, kuwahara_size=4, kuwahara_clean=3, softness=0.12,
+                                  stroke_strength=0.3, base_stroke=0.05, dab_variation=0.04, color_jitter=0.2,
+                                  color_drift=0.4, edge_darken=0.6, paint_wobble=2.5, granulation=0.5,
+                                  paper_tooth=0.08, dots_strength=0.0, ink_from_object=0.85,
+                                  outline_jitter=0.9, paper_strength=0.35)},
+    "CRAYON": {**_OIL, **dict(kuwahara_mix=0.3, kuwahara_size=3, stroke_strength=0.9, stroke_stretch=0.2,
+                              color_jitter=0.35, color_drift=0.15, edge_darken=0.1, paint_wobble=1.0,
+                              granulation=0.2, paper_tooth=0.6, shadow_pattern="HATCH", dots_strength=0.4,
+                              dots_size=6.0, ink_from_object=0.7, outline_jitter=1.0, paper_strength=0.3)},
+    "PENCIL": {**_OIL, **dict(kuwahara_mix=0.15, kuwahara_size=2, kuwahara_clean=2, stroke_strength=0.12,
+                              base_stroke=0.05, softness=0.1,
+                              color_jitter=0.15, color_drift=0.1, edge_darken=0.05, paint_wobble=0.6,
+                              granulation=0.1, paper_tooth=0.4, shadow_pattern="CROSS", dots_strength=0.6,
+                              dots_size=3.5, ink_from_object=0.35, outline_jitter=0.85, paper_strength=0.25)},
+    "ANIME": {**_OIL, **dict(kuwahara_mix=0.15, kuwahara_size=3, kuwahara_clean=2, softness=0.015,
+                             stroke_strength=0.0, base_stroke=0.0, dab_variation=0.0, paint_grain=0.01,
+                             color_jitter=0.0, color_drift=0.05, dots_strength=0.0, ink_from_object=0.35,
+                             outline_jitter=0.35, paper_strength=0.05)},
+}
+
+# --------------------------------------------------------------------------
+# variation: a seed that re-rolls brush direction, colour jitter, shadow hue, paper ...
+# around the current preset + medium. 0 = no variation (the stored base is restored).
+# --------------------------------------------------------------------------
+VARY_KEYS = ("stroke_seed", "stroke_angle", "stroke_stretch", "color_jitter", "color_drift", "shadow_tint",
+             "shadow_tint_amount", "shadow_hue_shift", "warmth", "saturation", "outline_jitter", "ink_from_object",
+             "kuwahara_size", "paper_color")
+# shadow tints that flatter skin, food and foliage alike. No blues or greens: the shadow is a multiply,
+# and blue x yellow/orange albedo turns green, which reads as mould on warm colours.
+_TINTS = ("#6B5BA8", "#9E4A6A", "#7A5A8C", "#7A3E7A", "#8A5A4A", "#A0506E", "#6A4A8A", "#8E5A7A")
+_PAPERS = ("#F2E3C6", "#FBF7EE", "#E9E4DA", "#E6ECF2", "#EBD9BD", "#F4E6E8")
+_BASE = "_var_base"
+
+
+def _clamp(v, lo, hi):
+    return max(lo, min(hi, v))
+
+
+def _restore_base(s):
+    base = s.get(_BASE)
+    if base is None:
+        return
+    for k in VARY_KEYS:
+        if k in base:
+            v = base[k]
+            setattr(s, k, tuple(v) if hasattr(v, "__len__") else v)
+    del s[_BASE]
+
+
+def _vary(s):
+    if s.variation == 0:
+        _restore_base(s)
+        return
+    if s.get(_BASE) is None or any(k not in s[_BASE] for k in VARY_KEYS):
+        s[_BASE] = {k: (list(getattr(s, k)) if k in ("shadow_tint", "paper_color") else getattr(s, k))
+                    for k in VARY_KEYS}
+    b = {k: (tuple(v) if hasattr(v, "__len__") else v) for k, v in s[_BASE].items()}
+    r = random.Random(s.variation * 7919 + 17)
+    s.stroke_seed = b["stroke_seed"] + s.variation * 3.17
+    s.stroke_angle = r.choice((-1.0, 1.0)) * _pm.radians(r.uniform(12.0, 65.0))
+    s.stroke_stretch = _clamp(b["stroke_stretch"] * r.uniform(0.6, 1.5), 0.05, 1.0)
+    s.color_jitter = _clamp(b["color_jitter"] * r.uniform(0.6, 1.6) + r.uniform(0.0, 0.08), 0.0, 1.0)
+    s.color_drift = _clamp(b["color_drift"] * r.uniform(0.5, 1.8) + r.uniform(0.0, 0.1), 0.0, 1.0)
+    tint = srgb(r.choice(_TINTS))
+    s.shadow_tint = tuple(0.25 * x + 0.75 * y for x, y in zip(b["shadow_tint"], tint))
+    s.shadow_tint_amount = _clamp(b["shadow_tint_amount"] + r.uniform(-0.05, 0.15), 0.0, 1.0)
+    s.shadow_hue_shift = _clamp(b["shadow_hue_shift"] + r.uniform(-0.05, 0.05), -0.2, 0.2)
+    s.warmth = _clamp(b["warmth"] + r.uniform(-0.02, 0.18), -1.0, 1.0)
+    s.saturation = _clamp(b["saturation"] * r.uniform(0.92, 1.12), 0.0, 2.0)
+    s.outline_jitter = _clamp(b["outline_jitter"] + r.uniform(-0.25, 0.25), 0.0, 1.0)
+    s.ink_from_object = _clamp(b["ink_from_object"] + r.uniform(-0.3, 0.35), 0.0, 1.0)
+    s.kuwahara_size = max(1, b["kuwahara_size"] + r.randint(-2, 2))
+    pc = srgb(r.choice(_PAPERS))
+    s.paper_color = tuple(0.4 * x + 0.6 * y for x, y in zip(b["paper_color"], pc))
+
+
+def _locked(sc, fn):
     s = sc.p25d
     s["_lock"] = True
     try:
-        for k, v in PRESETS.get(s.preset, {}).items():
-            setattr(s, k, v)
+        fn(s)
     finally:
         s["_lock"] = False
     _apply_all(sc)
+
+
+def apply_preset(self, context):
+    def go(s):
+        _restore_base(s)
+        for k, v in PRESETS.get(s.preset, {}).items():
+            setattr(s, k, v)
+        _vary(s)
+    _locked(_scene(self), go)
+
+
+def apply_medium(self, context):
+    def go(s):
+        _restore_base(s)
+        for k, v in MEDIA.get(s.medium, {}).items():
+            setattr(s, k, v)
+        _vary(s)
+    _locked(_scene(self), go)
+
+
+def apply_variation(self, context):
+    if not self.get("_lock"):
+        _locked(_scene(self), _vary)
 
 
 def _apply_all(sc):
@@ -132,6 +246,16 @@ class P25D_Settings(bpy.types.PropertyGroup):
         ("DAY", "Storybook Day", "Bright daylight, soft violet shadows, light paper"),
         ("CLEAN", "Clean / Product", "Subtle paint and film effects for product and character turntables")],
         update=apply_preset)
+    medium: EnumProperty(name="Medium", default="OIL", update=apply_medium, items=[
+        ("OIL", "Oil Paint", "Thick oil dabs on the light/shadow edge (default)"),
+        ("GOUACHE", "Gouache", "Flat, matte opaque paint with soft edges"),
+        ("WATERCOLOR", "Watercolour", "Transparent washes: pooled pigment at the edges, wobble, granulation"),
+        ("CRAYON", "Crayon", "Waxy strokes, paper tooth showing through, hatched shadows"),
+        ("PENCIL", "Coloured Pencil", "Light pencil shading with cross-hatched shadows"),
+        ("ANIME", "Anime Cel", "Clean cel shading, crisp lines, no paint texture")])
+    variation: IntProperty(name="Variation", default=0, min=0, max=99999, update=apply_variation,
+                           description="Re-rolls brush direction, colour jitter, shadow hue, line colour and paper "
+                                       "around the current preset and medium. 0 = off")
     only_selected: BoolProperty(name="Selected Objects Only", default=False,
                                 description="Make It Painterly only converts the selected objects")
     auto_key_light: BoolProperty(name="Add Key Light if Missing", default=True,
@@ -174,6 +298,14 @@ class P25D_Settings(bpy.types.PropertyGroup):
     base_stroke: FloatProperty(name="Lit Brush Texture", default=0.2, min=0, max=1,
                                description="Brush texture outside the terminator band", update=_upd_toon)
     stroke_seed: FloatProperty(name="Stroke Seed", default=0.0, update=_upd_toon)
+    stroke_angle: FloatProperty(name="Stroke Angle", subtype="ANGLE", default=_pm.radians(30.0),
+                                min=-_pm.pi, max=_pm.pi, description="Direction of the brush dabs", update=_upd_toon)
+    color_jitter: FloatProperty(name="Colour Jitter", default=0.25, min=0, max=1,
+                                description="Each brush dab gets its own small hue / saturation / value shift",
+                                update=_upd_toon)
+    color_drift: FloatProperty(name="Colour Drift", default=0.15, min=0, max=1,
+                               description="Large soft patches where the colour drifts, like re-mixed paint",
+                               update=_upd_toon)
     stroke_boil: BoolProperty(name="Dab Boil", default=True,
                               description="Slowly morph dabs on the boil rate (driver, no handler)",
                               update=lambda self, ctx: link_boil(self.id_data))
@@ -201,6 +333,9 @@ class P25D_Settings(bpy.types.PropertyGroup):
                                            "every frame (with Weld on this includes Merge by Distance)")
     boil_rate: IntProperty(name="Boil Rate (frames)", default=2, min=1, max=12, update=_upd_boil_rate)
     outline_color: _col("Ink Colour", "#3B1F14", _upd_outline)
+    ink_from_object: FloatProperty(name="Ink From Object Colour", default=0.45, min=0, max=1,
+                                   description="Tint each object's lines with a darker shade of its own colour "
+                                               "(0 = Ink Colour everywhere)", update=_upd_outline)
     outline_weld: BoolProperty(name="Weld UV Seams", default=True,
                                description="Merge split vertices before building the hull (prevents cracks; "
                                            "slower on dense meshes)", update=_upd_outline)
@@ -215,6 +350,18 @@ class P25D_Settings(bpy.types.PropertyGroup):
     dots_strength: FloatProperty(name="Texture Dots", default=0.12, min=0, max=1, update=_upd_post)
     dots_size: FloatProperty(name="Dot Spacing (px @1920)", default=5.0, min=2, max=40, update=_upd_post)
     dots_color: _col("Dot Colour", "#9F8FB3", _upd_post)
+    shadow_pattern: EnumProperty(name="Shadow Pattern", default="DOTS", update=_upd_post, items=[
+        ("DOTS", "Dots", "Halftone dots"), ("HATCH", "Hatching", "Parallel lines"),
+        ("CROSS", "Cross-hatching", "Crossed lines")])
+    edge_darken: FloatProperty(name="Edge Darkening", default=0.0, min=0, max=1,
+                               description="Pigment pools at colour edges (watercolour)", update=_upd_post)
+    paint_wobble: FloatProperty(name="Wet Wobble (px @1920)", default=0.0, min=0, max=12,
+                                description="Wavy, bleeding edges like wet paint", update=_upd_post)
+    granulation: FloatProperty(name="Granulation", default=0.0, min=0, max=1,
+                               description="Pigment settling into the paper grain", update=_upd_post)
+    paper_tooth: FloatProperty(name="Paper Tooth", default=0.0, min=0, max=1,
+                               description="Paper shows through the grain, more in light areas (crayon, pencil)",
+                               update=_upd_post)
     fog_start: FloatProperty(name="Fog Start", default=16.0, min=0, update=_upd_post)
     fog_end: FloatProperty(name="Fog End", default=40.0, min=0, update=_upd_post)
     fog_amount: FloatProperty(name="Fog", default=0.3, min=0, max=1, update=_upd_post)
@@ -420,8 +567,9 @@ class P25D_OT_outline(bpy.types.Operator):
     scope: SCOPE
 
     def execute(self, context):
-        n = sum(outline.add_outline(o, context.scene)
-                for o in autosetup.outline_targets(_sel_meshes(context, self.scope)))
+        objs = autosetup.outline_targets(_sel_meshes(context, self.scope))
+        n = sum(outline.add_outline(o, context.scene) for o in objs)
+        autosetup.store_ink_colours(objs)
         self.report({"INFO"}, f"Outline on {n} object(s)")
         return {"FINISHED"}
 
@@ -550,16 +698,37 @@ class P25D_OT_reset(bpy.types.Operator):
         s = sc.p25d
         s["_lock"] = True
         try:
+            if _BASE in s:
+                del s[_BASE]
             for name, prop in s.bl_rna.properties.items():
                 if name in ("rna_type", "preset", "key_light", "light_scale", "stroke_phase", "ambient_level") or prop.is_readonly:
                     continue
-                if getattr(prop, "is_array", False):
+                if prop.type == "ENUM":
+                    setattr(s, name, prop.default)
+                elif getattr(prop, "is_array", False):
                     setattr(s, name, tuple(prop.default_array))
                 elif hasattr(prop, "default"):
                     setattr(s, name, prop.default)
         finally:
             s["_lock"] = False
         _apply_all(sc)
+        return {"FINISHED"}
+
+
+class P25D_OT_shuffle(bpy.types.Operator):
+    bl_idname = "p25d.shuffle"
+    bl_label = "Shuffle"
+    bl_description = ("New variation: brush direction, colour jitter, shadow hue, line colour and paper are "
+                      "re-rolled around the current preset and medium")
+    bl_options = {"REGISTER", "UNDO"}
+
+    def execute(self, context):
+        s = context.scene.p25d
+        v = s.variation
+        while v == s.variation:
+            v = random.randint(1, 9999)
+        s.variation = v
+        self.report({"INFO"}, f"Variation {v}")
         return {"FINISHED"}
 
 
@@ -580,6 +749,7 @@ class P25D_OT_all(bpy.types.Operator):
         bpy.ops.p25d.setup_scene()
         bpy.ops.p25d.toonify(scope=scope)
         bpy.ops.p25d.outline(scope=scope)
+        autosetup.store_ink_colours(autosetup.outline_targets(objs))
         if sc.p25d.auto_fit:
             autosetup.fit_to_scene(sc, objs)
         bpy.ops.p25d.post()
@@ -620,7 +790,12 @@ class P25D_PT_main(bpy.types.Panel):
         col = self.layout.column(align=True)
         col.scale_y = 1.4
         col.operator("p25d.apply_all", icon="BRUSH_DATA")
-        self.layout.prop(s, "preset")
+        col = self.layout.column(align=True)
+        col.prop(s, "preset")
+        col.prop(s, "medium")
+        row = col.row(align=True)
+        row.prop(s, "variation")
+        row.operator("p25d.shuffle", text="", icon="FILE_REFRESH")
         opt = self.layout.column(align=True)
         opt.prop(s, "only_selected")
         opt.prop(s, "auto_key_light")
@@ -660,7 +835,9 @@ class P25D_PT_toon(_Sub, bpy.types.Panel):
         _props(l, s, ("lit_value", "shadow_value", "shadow_saturation", "shadow_hue_shift",
                       "shadow_tint", "shadow_tint_amount"), "Shadow colour")
         _props(l, s, ("stroke_strength", "stroke_scale", "stroke_stretch", "stroke_distortion",
-                      "stroke_band", "base_stroke", "stroke_seed", "stroke_boil", "dab_variation", "paint_grain"), "Brush dabs")
+                      "stroke_band", "stroke_angle", "base_stroke", "stroke_seed", "stroke_boil", "dab_variation",
+                      "paint_grain"), "Brush dabs")
+        _props(l, s, ("color_jitter", "color_drift"), "Colour variation")
         _props(l, s, ("rim_strength", "rim_color", "glow_strength", "glow_threshold"), "Rim & glow")
 
 
@@ -673,7 +850,7 @@ class P25D_PT_outline(_Sub, bpy.types.Panel):
     def draw(self, context):
         s, l = context.scene.p25d, self.layout
         l.operator("p25d.outline", icon="MOD_SOLIDIFY")
-        _props(l, s, ("outline_thickness", "outline_color", "outline_screen_space", "outline_ref_distance",
+        _props(l, s, ("outline_thickness", "outline_color", "ink_from_object", "outline_screen_space", "outline_ref_distance",
                       "outline_fade_distance", "outline_fade_min", "outline_jitter", "outline_jitter_scale",
                       "outline_boil", "boil_rate", "outline_weld"))
 
@@ -688,7 +865,8 @@ class P25D_PT_post(_Sub, bpy.types.Panel):
         row.operator("p25d.post", icon="FILE_REFRESH", text="").rebuild = True
         _props(l, s, ("post_kuwahara", "kuwahara_clean", "kuwahara_size", "kuwahara_sharpness",
                       "kuwahara_eccentricity", "kuwahara_mix", "ink_protect"), "Paint")
-        _props(l, s, ("dots_strength", "dots_size", "dots_color"), "Texture dots")
+        _props(l, s, ("edge_darken", "paint_wobble", "granulation", "paper_tooth"), "Medium")
+        _props(l, s, ("shadow_pattern", "dots_strength", "dots_size", "dots_color"), "Shadow pattern")
         _props(l, s, ("fog_start", "fog_end", "fog_amount", "fog_color"), "Depth fog")
         _props(l, s, ("bloom_threshold", "bloom_strength", "bloom_size", "halation"), "Glow")
         _props(l, s, ("paper_strength", "paper_tint", "paper_color", "dust", "grain_strength",
@@ -763,7 +941,7 @@ def _save_pre(*_):
 
 
 CLASSES = (P25D_Settings, P25D_ObjSettings, P25D_OT_setup_scene, P25D_OT_toonify, P25D_OT_outline,
-           P25D_OT_post, P25D_OT_revert, P25D_OT_sketch, P25D_OT_reset, P25D_OT_all, P25D_OT_fit, P25D_PT_main, P25D_PT_toon,
+           P25D_OT_post, P25D_OT_revert, P25D_OT_sketch, P25D_OT_reset, P25D_OT_shuffle, P25D_OT_all, P25D_OT_fit, P25D_PT_main, P25D_PT_toon,
            P25D_PT_outline, P25D_PT_post, P25D_PT_sketch, P25D_PT_object_side, P25D_PT_object)
 
 

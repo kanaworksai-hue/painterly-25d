@@ -9,7 +9,7 @@ import bpy
 from .util import (TAG, POST_GROUP, AOV_SHADOW, AOV_INK, sock, new, iface, menu, mix, mix_io,
                    math, vmath, ensure_aov)
 
-VER = 4
+VER = 6
 
 
 def _out(node, name):
@@ -138,6 +138,18 @@ def _build(ng, scene):
     dce = vmath(N, (X + 1700, -1000), "SUBTRACT"); dce.inputs[1].default_value = (0.5, 0.5, 0.0)
     L.new(dfr.outputs[0], dce.inputs[0])
     dln = vmath(N, (X + 1850, -1000), "LENGTH"); L.new(dce.outputs[0], dln.inputs[0])
+    # hatching / cross-hatching: distance to lines instead of to dot centres
+    dxy = new(N, "ShaderNodeSeparateXYZ", (X + 1850, -700)); L.new(dce.outputs[0], dxy.inputs[0])
+    ax = math(N, (X + 2000, -650), "ABSOLUTE"); L.new(dxy.outputs[0], ax.inputs[0])
+    ay = math(N, (X + 2000, -750), "ABSOLUTE"); L.new(dxy.outputs[1], ay.inputs[0])
+    cr = math(N, (X + 2150, -700), "MINIMUM"); L.new(ax.outputs[0], cr.inputs[0]); L.new(ay.outputs[0], cr.inputs[1])
+    pc = new(N, "ShaderNodeMix", (X + 2300, -700), "Pattern Cross Mix"); pc.data_type = "FLOAT"
+    L.new(_value(N, (X + 2150, -550), "Pattern Cross"), sock(pc.inputs, "Factor", "VALUE"))
+    L.new(ax.outputs[0], sock(pc.inputs, "A", "VALUE")); L.new(cr.outputs[0], sock(pc.inputs, "B", "VALUE"))
+    thin = math(N, (X + 2450, -700), "MULTIPLY", b=1.8); L.new(sock(pc.outputs, "Result", "VALUE"), thin.inputs[0])
+    pl = new(N, "ShaderNodeMix", (X + 2600, -850), "Pattern Line Mix"); pl.data_type = "FLOAT"
+    L.new(_value(N, (X + 2450, -550), "Pattern Line"), sock(pl.inputs, "Factor", "VALUE"))
+    L.new(dln.outputs["Value"], sock(pl.inputs, "A", "VALUE")); L.new(thin.outputs[0], sock(pl.inputs, "B", "VALUE"))
     # radius grows with shadow depth: r = 0.18 + 0.14 * shadow
     rad = math(N, (X + 1550, -1250), "MULTIPLY_ADD", b=0.14); rad.inputs[2].default_value = 0.18
     if shadow:
@@ -149,7 +161,7 @@ def _build(ng, scene):
     dot.interpolation_type = "SMOOTHSTEP"
     dot.inputs["To Min"].default_value = 1.0
     dot.inputs["To Max"].default_value = 0.0
-    L.new(dln.outputs["Value"], dot.inputs["Value"])
+    L.new(sock(pl.outputs, "Result", "VALUE"), dot.inputs["Value"])
     L.new(r0.outputs[0], dot.inputs["From Min"]); L.new(r1.outputs[0], dot.inputs["From Max"])
     sgate = new(N, "ShaderNodeMapRange", (X + 2000, -800), "Dot Shadow Gate")
     sgate.interpolation_type = "SMOOTHSTEP"
@@ -165,12 +177,52 @@ def _build(ng, scene):
     L.new(dstr.outputs[0], f); L.new(iout, a)
     b.default_value = (0.35, 0.28, 0.45, 1.0)
 
+    # -- media: wet-edge wobble, pigment pooling at edges, granulation ----
+    wnz = new(N, "ShaderNodeTexNoise", (X + 1300, 700), "Wobble Noise")
+    wnz.inputs["Scale"].default_value = 35.0
+    wnz.inputs["Detail"].default_value = 3.0
+    L.new(uni, wnz.inputs["Vector"])
+    wsub = vmath(N, (X + 1450, 700), "SUBTRACT"); wsub.inputs[1].default_value = (0.5, 0.5, 0.5)
+    L.new(wnz.outputs["Color"], wsub.inputs[0])
+    wsc = vmath(N, (X + 1600, 700), "SCALE"); L.new(wsub.outputs[0], wsc.inputs[0])
+    L.new(scaled("Wobble Px", (X + 1350, 900), 0.0), wsc.inputs["Scale"])
+    disp = new(N, "CompositorNodeDisplace", (X + 1550, 0), "Paint Wobble")
+    for nm in ("Extension X", "Extension Y"):
+        if nm in disp.inputs:
+            menu(disp.inputs[nm], "Extend", "EXTEND", "Clip")
+    L.new(dout, disp.inputs["Image"]); L.new(wsc.outputs[0], disp.inputs["Displacement"])
+    wob = disp.outputs[0]
+    eblur = new(N, "CompositorNodeBlur", (X + 1550, 350), "Edge Blur")
+    menu(eblur.inputs["Type"], "Gaussian", "GAUSS")
+    esz = scaled("Edge Size", (X + 1300, 500), 5.0)
+    ev = new(N, "ShaderNodeCombineXYZ", (X + 1450, 500)); L.new(esz, ev.inputs[0]); L.new(esz, ev.inputs[1])
+    L.new(ev.outputs[0], eblur.inputs["Size"]); L.new(wob, eblur.inputs["Image"])
+    ediff = vmath(N, (X + 1700, 350), "SUBTRACT"); L.new(wob, ediff.inputs[0]); L.new(eblur.outputs[0], ediff.inputs[1])
+    elen = vmath(N, (X + 1850, 350), "LENGTH"); L.new(ediff.outputs[0], elen.inputs[0])
+    eamp = math(N, (X + 2000, 350), "MULTIPLY", b=5.0, clamp=True); L.new(elen.outputs["Value"], eamp.inputs[0])
+    eamt = math(N, (X + 2150, 350), "MULTIPLY", label="Edge Darken Amount"); L.new(eamp.outputs[0], eamt.inputs[0])
+    edk = mix(N, (X + 1700, 0), "MULTIPLY", label="Edge Darken")          # pooled pigment = colour x itself
+    f, a, b, edout = mix_io(edk)
+    L.new(eamt.outputs[0], f); L.new(wob, a); L.new(wob, b)
+    gnz = new(N, "ShaderNodeTexNoise", (X + 1850, 700), "Granulation Noise")
+    gnz.inputs["Scale"].default_value = 160.0
+    gnz.inputs["Detail"].default_value = 8.0
+    gnz.inputs["Roughness"].default_value = 0.8
+    L.new(uni, gnz.inputs["Vector"])
+    gmr = new(N, "ShaderNodeMapRange", (X + 2000, 700)); gmr.interpolation_type = "SMOOTHSTEP"
+    gmr.inputs["From Min"].default_value = 0.45; gmr.inputs["From Max"].default_value = 0.72
+    L.new(gnz.outputs["Fac"], gmr.inputs["Value"])
+    gamt = math(N, (X + 2150, 700), "MULTIPLY", label="Granulation Amount"); L.new(gmr.outputs["Result"], gamt.inputs[0])
+    gra = mix(N, (X + 1850, 0), "MULTIPLY", label="Granulation")
+    f, a, b, grout = mix_io(gra)
+    L.new(gamt.outputs[0], f); L.new(edout, a); L.new(edout, b)
+
     # -- bloom + halation (glare-only, tinted) --------------------------
-    gl = new(N, "CompositorNodeGlare", (X + 1650, 0), "Bloom")
+    gl = new(N, "CompositorNodeGlare", (X + 2000, 0), "Bloom")
     menu(gl.inputs["Type"], "Bloom", "BLOOM", "Fog Glow")
     menu(gl.inputs["Quality"], "High", "HIGH", "Medium")
     gl.inputs["Tint"].default_value = (1.0, 0.43, 0.16, 1.0)
-    L.new(dout, gl.inputs["Image"])
+    L.new(grout, gl.inputs["Image"])
     hb = new(N, "CompositorNodeBlur", (X + 1850, -300), "Halation Blur")
     menu(hb.inputs["Type"], "Gaussian", "GAUSS")
     glare_only = next((o for o in gl.outputs if o.name == "Glare"), _out(gl, "Image"))
@@ -209,6 +261,38 @@ def _build(ng, scene):
     pt = mix(N, (X + 2250, 0), "MULTIPLY", label="Paper Tint")
     f, a, b, ptout = mix_io(pt)
     L.new(pout, a)
+
+    # -- paper tooth: paper shows through the grain (crayon / pencil), more in light areas
+    trot = new(N, "ShaderNodeVectorRotate", (X + 2050, -2600)); trot.rotation_type = "Z_AXIS"
+    trot.inputs["Angle"].default_value = 0.55
+    L.new(uni, trot.inputs["Vector"])
+    tst = vmath(N, (X + 2200, -2600), "MULTIPLY"); tst.inputs[1].default_value = (1.0, 0.09, 1.0)
+    L.new(trot.outputs[0], tst.inputs[0])
+    tnz = new(N, "ShaderNodeTexNoise", (X + 2350, -2600), "Tooth Noise")
+    tnz.inputs["Scale"].default_value = 230.0
+    tnz.inputs["Detail"].default_value = 3.0
+    tnz.inputs["Roughness"].default_value = 0.65
+    L.new(tst.outputs[0], tnz.inputs["Vector"])
+    tsum = math(N, (X + 2500, -2600), "MULTIPLY_ADD", b=0.6); L.new(tnz.outputs["Fac"], tsum.inputs[0])
+    L.new(fib.outputs["Fac"], tsum.inputs[2])
+    tsum2 = math(N, (X + 2600, -2600), "MULTIPLY", b=0.625); L.new(tsum.outputs[0], tsum2.inputs[0])
+    try:
+        lum = new(N, "CompositorNodeRGBToBW", (X + 2350, -2350))
+    except RuntimeError:
+        lum = new(N, "ShaderNodeRGBToBW", (X + 2350, -2350))
+    L.new(ptout, lum.inputs[0])
+    # paper shows at the grain peaks only; dark (heavily pressed) areas need a higher peak
+    thr = math(N, (X + 2500, -2350), "MULTIPLY_ADD", b=-0.12); thr.inputs[2].default_value = 0.64
+    L.new(lum.outputs[0], thr.inputs[0])
+    thr2 = math(N, (X + 2650, -2350), "ADD", b=0.05); L.new(thr.outputs[0], thr2.inputs[0])
+    tmr = new(N, "ShaderNodeMapRange", (X + 2800, -2450)); tmr.interpolation_type = "SMOOTHSTEP"
+    L.new(tsum2.outputs[0], tmr.inputs["Value"]); L.new(thr.outputs[0], tmr.inputs["From Min"])
+    L.new(thr2.outputs[0], tmr.inputs["From Max"])
+    tamt = math(N, (X + 2950, -2450), "MULTIPLY", label="Paper Tooth Amount"); L.new(tmr.outputs["Result"], tamt.inputs[0])
+    tooth = mix(N, (X + 2350, 0), "MIX", label="Paper Tooth")
+    f, a, b, toout = mix_io(tooth)
+    L.new(tamt.outputs[0], f); L.new(ptout, a)
+    ptout = toout
 
     # -- sensor dust: sparse, varied size, soft ---------------------------
     dv = new(N, "ShaderNodeTexVoronoi", (X + 2250, -2100), "Dust Voronoi")
@@ -308,6 +392,18 @@ def apply_post_settings(scene):
     setin("Kuwahara Mix", "Factor", s.kuwahara_mix, "VALUE")
     setin("Ink Protect Amount", 1, s.ink_protect)
     setval("Dot Spacing", s.dots_size)
+    pat = getattr(s, "shadow_pattern", "DOTS")
+    setval("Pattern Line", 0.0 if pat == "DOTS" else 1.0)
+    setval("Pattern Cross", 1.0 if pat == "CROSS" else 0.0)
+    setval("Wobble Px", s.paint_wobble)
+    setin("Edge Darken Amount", 1, s.edge_darken)
+    setin("Granulation Amount", 1, s.granulation * 0.7)
+    setin("Paper Tooth Amount", 1, s.paper_tooth)
+    setin("Paper Tooth", "B", col(s.paper_color), "RGBA")
+    if n.get("Paint Wobble"):
+        n["Paint Wobble"].mute = s.paint_wobble <= 0.0
+    if n.get("Edge Blur"):
+        n["Edge Blur"].mute = s.edge_darken <= 0.0
     setin("Dots Amount", 1, s.dots_strength)
     setin("Texture Dots", "B", col(s.dots_color), "RGBA")
     setin("Bloom", "Threshold", s.bloom_threshold)

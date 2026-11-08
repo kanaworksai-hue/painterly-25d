@@ -5,7 +5,12 @@ from .util import (TAG, OUTLINE_GROUP, OUTLINE_MAT, OUTLINE_MOD, AOV_INK, sock, 
                    math, vmath)
 
 
+INK_VER = 2
+
+
 def build_outline_material():
+    """Emission ink. Colour = scene ink colour mixed with a darkened copy of each object's own
+    colour (custom property "p25d_ink", written by Make It Painterly) -> coloured lines."""
     mat = bpy.data.materials.get(OUTLINE_MAT) or bpy.data.materials.new(OUTLINE_MAT)
     if hasattr(mat, "use_nodes") and not mat.node_tree:
         mat.use_nodes = True
@@ -16,6 +21,22 @@ def build_outline_material():
     nt.nodes.clear()
     out = new(nt.nodes, "ShaderNodeOutputMaterial", (400, 0))
     em = new(nt.nodes, "ShaderNodeEmission", (100, 80), "Ink")
+    N, L = nt.nodes, nt.links
+    oc = new(N, "ShaderNodeAttribute", (-900, 200), "Object Colour")
+    oc.attribute_type = "OBJECT"; oc.attribute_name = "p25d_ink"
+    on = new(N, "ShaderNodeAttribute", (-900, 0), "Object Colour Set")
+    on.attribute_type = "OBJECT"; on.attribute_name = "p25d_ink_on"
+    dk = new(N, "ShaderNodeHueSaturation", (-650, 200), "Ink Darken")
+    dk.inputs["Saturation"].default_value = 1.25
+    dk.inputs["Value"].default_value = 0.4
+    L.new(oc.outputs["Color"], dk.inputs["Color"])
+    amt = new(N, "ShaderNodeValue", (-650, -50), "Ink From Object")
+    fac = math(N, (-450, 0), "MULTIPLY"); L.new(on.outputs["Fac"], fac.inputs[0]); L.new(amt.outputs[0], fac.inputs[1])
+    mx = new(N, "ShaderNodeMix", (-250, 100), "Ink Mix"); mx.data_type = "RGBA"
+    L.new(fac.outputs[0], sock(mx.inputs, "Factor", "VALUE"))
+    sock(mx.inputs, "A", "RGBA").default_value = (0.04, 0.015, 0.008, 1.0)
+    L.new(dk.outputs[0], sock(mx.inputs, "B", "RGBA"))
+    L.new(sock(mx.outputs, "Result", "RGBA"), em.inputs["Color"])
     lp = new(nt.nodes, "ShaderNodeLightPath", (-150, 250))
     tr = new(nt.nodes, "ShaderNodeBsdfTransparent", (100, -80))
     ms = new(nt.nodes, "ShaderNodeMixShader", (260, 0))
@@ -26,6 +47,7 @@ def build_outline_material():
     aov = new(nt.nodes, "ShaderNodeOutputAOV", (400, -200), "P25D AOV")
     aov.aov_name = AOV_INK
     aov.inputs["Value"].default_value = 1.0
+    mat[TAG + "_ver"] = INK_VER
     return mat
 
 
@@ -184,7 +206,9 @@ def add_outline(obj, scene):
     if obj.type != "MESH" or obj.get(TAG + "_skip") or not obj.is_editable or is_flat_plane(obj):
         return False
     build_outline_group()
-    mat = bpy.data.materials.get(OUTLINE_MAT) or build_outline_material()
+    mat = bpy.data.materials.get(OUTLINE_MAT)
+    if mat is None or mat.get(TAG + "_ver") != INK_VER:
+        mat = build_outline_material()
     mod = obj.modifiers.get(OUTLINE_MOD) or obj.modifiers.new(OUTLINE_MOD, "NODES")
     mod.node_group = bpy.data.node_groups[OUTLINE_GROUP]
     set_mod_input(mod, "Material", mat)
@@ -208,9 +232,14 @@ def apply_outline_settings(scene, objs=None):
     s = scene.p25d
     mat = bpy.data.materials.get(OUTLINE_MAT)
     if mat and mat.node_tree:
-        ink = mat.node_tree.nodes.get("Ink")
-        if ink:
-            ink.inputs["Color"].default_value = tuple(s.outline_color) + (1.0,)
+        nodes = mat.node_tree.nodes
+        mx, amt = nodes.get("Ink Mix"), nodes.get("Ink From Object")
+        if mx is not None:
+            sock(mx.inputs, "A", "RGBA").default_value = tuple(s.outline_color) + (1.0,)
+        elif nodes.get("Ink"):                                  # 1.0 material
+            nodes["Ink"].inputs["Color"].default_value = tuple(s.outline_color) + (1.0,)
+        if amt is not None:
+            amt.outputs[0].default_value = s.ink_from_object
     if not objs:      # scene objects plus objects only reachable through collection instances
         from .autosetup import expand
         objs = [o for o in expand(scene.objects) if o.modifiers.get(OUTLINE_MOD)]

@@ -1,10 +1,10 @@
 schema_version = "1.0.0"
 
 id = "painterly_25d"
-version = "1.0.0"
+version = "1.1.0"
 name = "Painterly 2.5D"
-tagline = "One-click hand-painted 2.5D look: toon, ink lines, oil paint"
-maintainer = "Tokyo AI Visuals"
+tagline = "One-click painterly 2.5D: oil, watercolour, crayon, anime"
+maintainer = "Tokyo AI Visuals LLC"
 type = "add-on"
 website = "https://github.com/kanaworksai-hue/painterly-25d"
 
@@ -13,4 +13,4 @@ tags = ["Render", "Material", "Compositing"]
 blender_version_min = "5.0.0"
 
 license = ["SPDX:GPL-3.0-or-later"]
-copyright = ["2026 Tokyo AI Visuals"]
+copyright = ["2026 Tokyo AI Visuals LLC"]

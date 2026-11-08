@@ -316,3 +316,104 @@ def estimate_ambient(scene):
         if level is None:
             level = 0.5          # procedural sky / gradient: neutral guess, tweak in the panel
     return _m.pi * k * level * AMBIENT_COMP
+
+
+# --------------------------------------------------------------------------
+# object colour -> coloured outlines
+# --------------------------------------------------------------------------
+def _image_mean_rgb(img, cap=65536):
+    try:
+        import numpy as np
+        n = len(img.pixels)
+        if n == 0:
+            return None
+        buf = np.empty(n, dtype=np.float32)
+        img.pixels.foreach_get(buf)
+        px = buf.reshape(-1, 4)
+        px = px[::max(1, len(px) // cap)]
+        w = px[:, 3:4] if img.depth in (32, 128) or img.alpha_mode != "NONE" else None
+        if w is not None and float(w.sum()) > 1e-3:
+            return tuple(float(x) for x in (px[:, :3] * w).sum(axis=0) / float(w.sum()))
+        return tuple(float(x) for x in px[:, :3].mean(axis=0))
+    except Exception:
+        return None
+
+
+def _socket_colour(sock_, obj, depth=0):
+    """Average colour arriving at a colour socket (constant, image texture or vertex colours)."""
+    if not sock_.is_linked:
+        v = sock_.default_value
+        return tuple(v[:3]) if hasattr(v, "__len__") and len(v) >= 3 else None
+    node = sock_.links[0].from_node
+    if node.type == "TEX_IMAGE" and node.image:
+        return _image_mean_rgb(node.image)
+    if node.type in ("VERTEX_COLOR", "ATTRIBUTE"):
+        attrs = getattr(obj.data, "color_attributes", None)
+        if attrs and len(attrs):
+            try:
+                import numpy as np
+                ca = attrs.get(getattr(node, "layer_name", "") or getattr(node, "attribute_name", "")) or \
+                    attrs.active_color or attrs[0]
+                buf = np.empty(len(ca.data) * 4, dtype=np.float32)
+                ca.data.foreach_get("color", buf)
+                return tuple(float(x) for x in buf.reshape(-1, 4)[:, :3].mean(axis=0))
+            except Exception:
+                return None
+        return None
+    if depth < 4:                          # follow mixes, hue/sat, gamma, reroutes ... to the first colour input
+        for i in node.inputs:
+            if i.type == "RGBA" and (i.is_linked or depth == 0):
+                c = _socket_colour(i, obj, depth + 1)
+                if c is not None:
+                    return c
+    return None
+
+
+def object_colour(o):
+    """Area-weighted mean albedo of an object's painterly materials (None when unknown)."""
+    from .util import TOON_GROUP
+    me = o.data if o.type == "MESH" else None
+    counts = {}
+    if me is not None and len(me.polygons):
+        try:
+            import numpy as np
+            idx = np.empty(len(me.polygons), dtype=np.int32)
+            me.polygons.foreach_get("material_index", idx)
+            counts = {int(k): int(v) for k, v in zip(*np.unique(idx, return_counts=True))}
+        except Exception:
+            counts = {}
+    acc, wsum = [0.0, 0.0, 0.0], 0.0
+    for i, slot in enumerate(o.material_slots):
+        m = slot.material
+        if not m or not m.node_tree:
+            continue
+        grp = next((n for n in m.node_tree.nodes if n.type == "GROUP" and n.node_tree
+                    and n.node_tree.name == TOON_GROUP), None)
+        if grp is None:
+            continue
+        c = _socket_colour(grp.inputs["Base Color"], o)
+        if c is None:
+            continue
+        w = counts.get(i, 1 if not counts else 0)
+        if w == 0:
+            continue
+        for k in range(3):
+            acc[k] += c[k] * w
+        wsum += w
+    return tuple(a / wsum for a in acc) if wsum else None
+
+
+def store_ink_colours(objs):
+    """Write each object's mean colour to custom properties read by the outline material."""
+    n = 0
+    for o in objs:
+        if o.type != "MESH" or not o.is_editable:
+            continue
+        c = object_colour(o)
+        if c is None:
+            o[TAG + "_ink_on"] = 0.0
+            continue
+        o[TAG + "_ink"] = [max(0.0, min(1.0, x)) for x in c]
+        o[TAG + "_ink_on"] = 1.0
+        n += 1
+    return n

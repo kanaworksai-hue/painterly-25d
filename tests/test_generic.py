@@ -94,6 +94,40 @@ check(True, "all presets apply")
 # presets must not overwrite the fitted fog distances (an absolute fog_start once fogged small products completely)
 check(not bad, f"presets keep fitted fog distances (changed by: {bad})")
 
+# 1.1: coloured ink, media, variation
+check(sph.get("p25d_ink_on") == 1.0 and abs(sph["p25d_ink"][0] - 0.9) < 0.05, "object colour stored for coloured ink")
+check(cyl.get("p25d_ink_on") == 1.0, "image-textured object colour stored")
+ink = bpy.data.materials["P25D Outline Ink"].node_tree.nodes
+check(ink.get("Ink Mix") is not None and abs(ink["Ink From Object"].outputs[0].default_value - sc.p25d.ink_from_object) < 1e-6,
+      "outline ink mixes object colour")
+pn = sc.compositing_node_group.nodes
+check(all(pn.get(k) for k in ("Paint Wobble", "Edge Darken", "Granulation", "Paper Tooth", "Pattern Line")),
+      "media nodes in compositor")
+tg = bpy.data.node_groups["P25D Toon"].nodes
+check(tg.get("Colour Jitter") is not None and tg.get("Stroke Rotation") is not None, "colour jitter / stroke angle in toon group")
+snap = P.MEDIA["OIL"]
+eq = lambda a, b: a == b if isinstance(b, str) else abs(a - b) < 1e-5
+for med in ("WATERCOLOR", "CRAYON", "PENCIL", "ANIME", "GOUACHE"):
+    sc.p25d.medium = med
+    sc.render.filepath = f"{OUT}/medium_{med.lower()}.png"
+    if med in ("WATERCOLOR", "CRAYON"):
+        sc.p25d.fog_start, sc.p25d.fog_end = fit_fog
+        bpy.ops.render.render(write_still=True)
+check(eq(sc.p25d.edge_darken, 0.18) and sc.p25d.shadow_pattern == "DOTS", "medium sets its keys")
+sc.p25d.medium = "OIL"
+check(all(eq(getattr(sc.p25d, k), v) for k, v in snap.items()), "switching media back to oil is lossless")
+before = {k: (tuple(getattr(sc.p25d, k)) if k in ("shadow_tint", "paper_color") else getattr(sc.p25d, k)) for k in P.VARY_KEYS}
+bpy.ops.p25d.shuffle(); v1 = sc.p25d.variation; a1 = sc.p25d.stroke_angle
+bpy.ops.p25d.shuffle(); bpy.ops.p25d.shuffle()
+sc.p25d.variation = v1
+check(v1 > 0 and abs(sc.p25d.stroke_angle - a1) < 1e-6, "variation is reproducible from its number")
+sc.p25d.medium = "WATERCOLOR"; sc.p25d.medium = "OIL"
+check(abs(sc.p25d.stroke_angle - a1) < 1e-6, "variation survives a medium round trip")
+sc.p25d.variation = 0
+after = {k: (tuple(getattr(sc.p25d, k)) if k in ("shadow_tint", "paper_color") else getattr(sc.p25d, k)) for k in P.VARY_KEYS}
+check(all(abs(sum(x) - sum(y)) < 1e-5 if isinstance(x, tuple) else abs(x - y) < 1e-5 for x, y in
+          ((before[k], after[k]) for k in P.VARY_KEYS)), "variation 0 restores the base look")
+
 # translations
 import bpy.app.translations as T
 check(T.pgettext_iface("Make It Painterly", "Operator") is not None, "translations registered")
