@@ -9,7 +9,7 @@ import bpy
 from .util import (TAG, POST_GROUP, AOV_SHADOW, AOV_INK, sock, new, iface, menu, mix, mix_io,
                    math, vmath, ensure_aov)
 
-VER = 6
+VER = 7
 
 
 def _out(node, name):
@@ -314,11 +314,13 @@ def _build(ng, scene):
     L.new(dd.outputs[0], f); L.new(ptout, a)
     b.default_value = (0.9, 0.85, 0.75, 1.0)
 
-    # -- film grain (per pixel, animated) -------------------------------
+    # -- film grain (per pixel; static unless Animated Grain is on) -----
     st = new(N, "CompositorNodeSceneTime", (X + 2450, -2600))
+    ganim = math(N, (X + 2550, -2700), "MULTIPLY", label="Grain Time")
+    L.new(st.outputs["Frame"], ganim.inputs[0]); L.new(_value(N, (X + 2400, -2750), "Grain Animate"), ganim.inputs[1])
     wn = new(N, "ShaderNodeTexWhiteNoise", (X + 2650, -2600), "Grain Noise")
     wn.noise_dimensions = "4D"
-    L.new(pix, wn.inputs["Vector"]); L.new(st.outputs["Frame"], wn.inputs["W"])
+    L.new(pix, wn.inputs["Vector"]); L.new(ganim.outputs[0], wn.inputs["W"])
     grain = mix(N, (X + 2650, 0), "OVERLAY", label="Grain")
     f, a, b, gout = mix_io(grain)
     L.new(duout, a); L.new(wn.outputs["Value"], b)
@@ -415,6 +417,7 @@ def apply_post_settings(scene):
     setin("Paper Tint", "B", col(s.paper_color), "RGBA")
     setin("Dust Amount", 1, s.dust)
     setin("Grain", "Factor", s.grain_strength, "VALUE")
+    setval("Grain Animate", 1.0 if getattr(s, "grain_animate", False) else 0.0)
     setin("Aberration", "Dispersion", s.aberration)
     setin("Vignette Amount", 1, s.vignette)
     setin("Vignette", "B", col(s.vignette_color), "RGBA")

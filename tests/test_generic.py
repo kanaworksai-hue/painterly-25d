@@ -74,6 +74,20 @@ check(gnd.modifiers.get("P25D Outline") is None, "ground plane skipped by outlin
 print("FIT stroke_scale", round(sc.p25d.stroke_scale, 2), "fog", round(sc.p25d.fog_start, 1), round(sc.p25d.fog_end, 1))
 sc.render.filepath = OUT + "/generic_painted.png"; bpy.ops.render.render(write_still=True)
 
+# no surface flicker: with default settings a static shot must stay still frame to frame
+# (only the hand-drawn outline boils on twos). Dab Boil / animated grain used to re-draw ~30 % of the pixels.
+import numpy as np
+def _frame(f):
+    sc.frame_set(f); sc.render.filepath = OUT + f"/flicker_{f}.png"; bpy.ops.render.render(write_still=True)
+    im = bpy.data.images.load(sc.render.filepath, check_existing=False)
+    a = np.array(im.pixels[:], dtype=np.float32).reshape(im.size[1], im.size[0], 4)[:, :, :3]; bpy.data.images.remove(im)
+    return a
+fr = [_frame(f) for f in (1, 2, 3)]
+chg = max(float((np.abs(fr[i] - fr[i - 1]).max(axis=2) > 8 / 255).mean() * 100) for i in (1, 2))
+check(not sc.p25d.stroke_boil and not sc.p25d.grain_animate and chg < 3.0,
+      f"static shot does not flicker ({chg:.1f} % of pixels change between frames)")
+sc.frame_set(1)
+
 # tiny-object fit: scale everything by 0.05 and refit -> stroke scale should grow ~20x
 s0 = sc.p25d.stroke_scale
 for o in (cube, sph, txt, crv, mk, cyl, ico, inst, gnd): o.scale = tuple(x * 0.05 for x in o.scale); o.location = tuple(x * 0.05 for x in o.location)

@@ -18,7 +18,7 @@
 bl_info = {
     "name": "Painterly 2.5D",
     "author": "Tokyo AI Visuals LLC (KanaWorks_AI)",
-    "version": (1, 1, 0),
+    "version": (1, 1, 1),
     "blender": (5, 0, 0),
     "location": "3D Viewport > Sidebar (N) > Painterly",
     "description": "Hand-painted 2.5D toon shading, hand-drawn outlines and painterly compositing",
@@ -310,8 +310,9 @@ class P25D_Settings(bpy.types.PropertyGroup):
     color_drift: FloatProperty(name="Colour Drift", default=0.15, min=0, max=1,
                                description="Large soft patches where the colour drifts, like re-mixed paint",
                                update=_upd_toon)
-    stroke_boil: BoolProperty(name="Dab Boil", default=True,
-                              description="Slowly morph dabs on the boil rate (driver, no handler)",
+    stroke_boil: BoolProperty(name="Dab Boil", default=False,
+                              description="Re-draw the brush dabs on the boil rate. Off by default: the whole surface "
+                                          "changes every few frames, which reads as flicker (lines still boil)",
                               update=lambda self, ctx: link_boil(self.id_data))
     stroke_phase: FloatProperty(name="Stroke Phase", default=0.0,
                                 description="Driven: floor(frame / boil rate) * 0.03 when Dab Boil is on")
@@ -379,6 +380,8 @@ class P25D_Settings(bpy.types.PropertyGroup):
     paper_color: _col("Paper Colour", "#F2E3C6", _upd_post)
     dust: FloatProperty(name="Sensor Dust", default=0.08, min=0, max=1, update=_upd_post)
     grain_strength: FloatProperty(name="Grain", default=0.035, min=0, max=1, update=_upd_post)
+    grain_animate: BoolProperty(name="Animated Grain", default=False, update=_upd_post,
+                                description="New grain every frame (film look). Off: the grain stays still, no shimmer")
     aberration: FloatProperty(name="Aberration", default=0.006, min=0, max=0.1, precision=4, update=_upd_post)
     vignette: FloatProperty(name="Vignette", default=0.35, min=0, max=1, update=_upd_post)
     vignette_color: _col("Vignette Colour", "#2A1810", _upd_post)
@@ -715,6 +718,7 @@ class P25D_OT_reset(bpy.types.Operator):
                     setattr(s, name, prop.default)
         finally:
             s["_lock"] = False
+        link_boil(sc)
         _apply_all(sc)
         return {"FINISHED"}
 
@@ -873,7 +877,7 @@ class P25D_PT_post(_Sub, bpy.types.Panel):
         _props(l, s, ("shadow_pattern", "dots_strength", "dots_size", "dots_color"), "Shadow pattern")
         _props(l, s, ("fog_start", "fog_end", "fog_amount", "fog_color"), "Depth fog")
         _props(l, s, ("bloom_threshold", "bloom_strength", "bloom_size", "halation"), "Glow")
-        _props(l, s, ("paper_strength", "paper_tint", "paper_color", "dust", "grain_strength",
+        _props(l, s, ("paper_strength", "paper_tint", "paper_color", "dust", "grain_strength", "grain_animate",
                       "aberration", "vignette", "vignette_color", "contrast", "black_lift", "warmth",
                       "saturation"), "Film")
 

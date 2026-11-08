@@ -1,7 +1,7 @@
 schema_version = "1.0.0"
 
 id = "painterly_25d"
-version = "1.1.0"
+version = "1.1.1"
 name = "Painterly 2.5D"
 tagline = "One-click painterly 2.5D: oil, watercolour, crayon, anime"
 maintainer = "Tokyo AI Visuals LLC"

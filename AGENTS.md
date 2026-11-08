@@ -92,6 +92,8 @@ On later tweaks, omit what they didn't mention: the current preset, medium and v
 | more coloured lines, 線に色を, 彩色线条 | `--set ink_from_object=0.9` |
 | less film grain / dust | `--set grain_strength=0.01 --set dust=0` |
 | more dramatic shadows | `--set shadow_value=0.55` |
+| surface flickers / shimmers, チカチカする, 表面在闪 | keep `--set stroke_boil=false --set grain_animate=false` (the defaults) |
+| paint should move like hand-drawn animation, 筆を毎フレーム描き直す, 笔触也要动 | `--set stroke_boil=true` (optionally `--set grain_animate=true`) |
 
 Unknown names fail with a hint; run `--list` and pick the closest, then tell the human what you chose.
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.1 (2026-11-08): no more surface flicker
+
+- **Dab Boil is now off by default.** It re-drew the brush dabs every 2 frames, so about 30 % of the picture changed
+  between frames and surfaces shimmered (colour jitter followed the dabs and made it stronger). The effect is still
+  there: turn on *Toon & Strokes › Brush dabs › Dab Boil* for the hand-drawn-animation look.
+- **Film grain stays still by default.** New *Animated Grain* toggle (Post FX › Film) brings back per-frame grain.
+- The hand-drawn outline still boils on twos (about 1.5 % of pixels per step).
+- Reset to Defaults now also removes the dab-boil driver.
+- Test: a static shot with default settings must not flicker.
+- Files made with 1.1.0 keep their saved settings: untick *Dab Boil* there if surfaces shimmer.
+
 ## 1.1.0 (2026-11-08): media, shuffle and more variety
 
 - **Medium** menu: Oil Paint (default), Gouache, Watercolour, Crayon, Coloured Pencil, Anime Cel.
