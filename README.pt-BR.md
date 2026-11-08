@@ -199,23 +199,23 @@ Um node group de toon é inserido e a conexão original fica guardada. O *Revert
 <details>
 <summary><b>Posso usar as imagens e os vídeos comercialmente?</b></summary>
 
-Pode. Os renders e vídeos que você fizer com o Painterly 2.5D são obra sua. A GPL vale para o código do add-on, não para o que você cria com ele (mas respeite as licenças dos modelos e texturas que usar). Ao publicar, coloque `Made with Painterly 2.5D by @KanaWorks_AI` (veja [Créditos](#-créditos)).
+Pode. Os renders e vídeos que você fizer com o Painterly 2.5D são obra sua. A GPL vale para o código do add-on, não para o que você cria com ele (mas respeite as licenças dos modelos e texturas que usar). Não precisa de créditos, mas `Made with Painterly 2.5D by @KanaWorks_AI` é sempre bem-vindo.
 </details>
 
 ## 📝 Créditos
 
-O Painterly 2.5D é gratuito, inclusive para uso comercial. Em troca, pedimos os créditos.
+O Painterly 2.5D é gratuito, inclusive para uso comercial.
 
-**Ao publicar imagens ou vídeos feitos com ele**, coloque isto no post, na descrição do vídeo ou nos créditos:
-
-```
-Made with Painterly 2.5D by @KanaWorks_AI
-```
-
-**Ao redistribuir, modificar ou incluir o add-on em outro produto** (forks, versões modificadas, ports, pacotes ou produtos que o incluam), é **obrigatório** manter esta linha, sem alterações, na descrição do add-on e na documentação (termo adicional da seção 7(b) da GPLv3; veja [NOTICE.md](NOTICE.md)):
+**Ao redistribuir, modificar ou incluir o add-on em outro produto** (forks, versões modificadas, ports, pacotes ou produtos que o incluam, gratuitos ou pagos), é **obrigatório** manter esta linha, sem alterações, na descrição do add-on e na documentação (termo adicional da seção 7(b) da GPLv3; veja [NOTICE.md](NOTICE.md)):
 
 ```
 Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+**Imagens e vídeos que você fizer** não precisam de créditos. Se quiser colocar, esta linha no post ou na descrição é muito bem-vinda:
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
 ```
 
 ## ⭐ Apoie com uma estrela

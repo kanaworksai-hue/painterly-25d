@@ -199,23 +199,23 @@ flowchart LR
 <details>
 <summary><b>做出来的图片和视频可以商用吗？</b></summary>
 
-可以。用 Painterly 2.5D 渲染的图片和视频是你自己的作品，可以自由使用。GPL 只适用于插件本身的代码，不适用于用它做出来的作品（使用的模型和贴图请遵守它们各自的授权）。 发布时请加上 `Made with Painterly 2.5D by @KanaWorks_AI`（见[署名](#-署名)）。
+可以。用 Painterly 2.5D 渲染的图片和视频是你自己的作品，可以自由使用。GPL 只适用于插件本身的代码，不适用于用它做出来的作品（使用的模型和贴图请遵守它们各自的授权）。不需要署名，不过加上 `Made with Painterly 2.5D by @KanaWorks_AI` 我们会很开心。
 </details>
 
 ## 📝 署名
 
-Painterly 2.5D 免费，可以商用。作为交换，请注明出处。
+Painterly 2.5D 免费，可以商用。
 
-**发布用它做出的图片或视频时**，请在正文、视频简介或片尾加上：
-
-```
-Made with Painterly 2.5D by @KanaWorks_AI
-```
-
-**再分发、修改或打包本插件时**（fork、修改版、移植版、包含它的合集或产品等），**必须**在插件说明和文档中原样保留下面这一行（GPL-3.0 第 7 条 (b) 附加条款，详见 [NOTICE.md](NOTICE.md)）：
+**再分发、修改或打包本插件时**（fork、修改版、移植版、包含它的合集或产品等，无论收费与否），**必须**在插件说明和文档中原样保留下面这一行（GPL-3.0 第 7 条 (b) 附加条款，详见 [NOTICE.md](NOTICE.md)）：
 
 ```
 Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+**用它做出的图片和视频**不需要署名。如果愿意，在正文或简介里加上这一行，我们会很开心：
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
 ```
 
 ## ⭐ 点个 Star 支持一下

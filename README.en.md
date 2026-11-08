@@ -199,23 +199,23 @@ A toon node group is inserted and the original connection is remembered. *Revert
 <details>
 <summary><b>Can I use the images and videos commercially?</b></summary>
 
-Yes. Renders and videos you make with Painterly 2.5D are your own work. The GPL covers the add-on's code, not what you make with it (do follow the licences of the models and textures you use). When you publish them, please add `Made with Painterly 2.5D by @KanaWorks_AI` (see [Credit](#-credit)).
+Yes. Renders and videos you make with Painterly 2.5D are your own work. The GPL covers the add-on's code, not what you make with it (do follow the licences of the models and textures you use). No credit is needed, but `Made with Painterly 2.5D by @KanaWorks_AI` is always welcome.
 </details>
 
 ## 📝 Credit
 
-Painterly 2.5D is free, commercial use included. In return, please credit it.
+Painterly 2.5D is free, commercial use included.
 
-**When you publish images or videos you made with it**, put this in the post, the video description or the credits:
-
-```
-Made with Painterly 2.5D by @KanaWorks_AI
-```
-
-**When you redistribute, modify or bundle the add-on** (forks, modified versions, ports, packs or products that include it), keeping this line unchanged in the add-on's description and its documentation is **required** (an additional term under GPLv3 section 7(b); see [NOTICE.md](NOTICE.md)):
+**When you redistribute, modify or bundle the add-on** (forks, modified versions, ports, packs or products that include it, free or paid), keeping this line unchanged in the add-on's description and its documentation is **required** (an additional term under GPLv3 section 7(b); see [NOTICE.md](NOTICE.md)):
 
 ```
 Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+**Images and videos you make** need no credit. If you'd like to add one, this line in the post or description is very welcome:
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
 ```
 
 ## ⭐ Support with a star

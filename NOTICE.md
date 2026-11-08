@@ -17,14 +17,12 @@ version 3. It adds no other restriction: everything else is plain GPL-3.0-or-lat
 
 ## Images and videos you make with it
 
-Renders, images and videos you create with Painterly 2.5D are your own work, free to use commercially. When you
-publish them, please add this credit in the post, the video description or the credits:
+Renders, images and videos you create with Painterly 2.5D are your own work, free to use commercially, and need no credit.
+If you'd like to mention it, this line is very welcome:
 
 ```
 Made with Painterly 2.5D by @KanaWorks_AI
 ```
-
-It isn't a legal condition for your renders, but it is how this free add-on keeps getting made.
 
 ## Name and logo
 
@@ -43,7 +41,7 @@ Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksa
 
 これ以外の条件はなく、すべて GPL-3.0-or-later のとおりです。
 
-**作った画像・動画：** Painterly 2.5D でレンダリングした作品はあなたのもので、商用でも自由に使えます。公開するときは、投稿文・概要欄・クレジットに `Made with Painterly 2.5D by @KanaWorks_AI` と入れてください。作品への法的な条件ではありませんが、この無料アドオンを作り続ける力になります。
+**作った画像・動画：** Painterly 2.5D でレンダリングした作品はあなたのもので、商用でも自由に使えます。クレジットは必要ありません。よければ `Made with Painterly 2.5D by @KanaWorks_AI` と入れてもらえると嬉しいです。
 
 ## 简体中文
 
@@ -55,4 +53,4 @@ Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksa
 
 除此之外没有其他限制，其余均按 GPL-3.0-or-later。
 
-**你做出的图片和视频：** 用 Painterly 2.5D 渲染的作品属于你，可以自由商用。发布时请在正文、视频简介或片尾加上 `Made with Painterly 2.5D by @KanaWorks_AI`。这不是对作品的法律条件，但能支持这个免费插件继续更新。
+**你做出的图片和视频：** 用 Painterly 2.5D 渲染的作品属于你，可以自由商用，不需要署名。如果愿意，加上 `Made with Painterly 2.5D by @KanaWorks_AI` 我们会很开心。

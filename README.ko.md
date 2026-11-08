@@ -199,23 +199,23 @@ Claude Code나 Codex처럼 컴퓨터를 조작할 수 있는 AI 에이전트에�
 <details>
 <summary><b>만든 이미지나 영상을 상업적으로 써도 되나요?</b></summary>
 
-네. Painterly 2.5D로 만든 렌더 이미지와 영상은 여러분의 작품이에요. GPL은 애드온 코드에만 적용되고, 애드온으로 만든 결과물에는 적용되지 않습니다(사용한 모델과 텍스처의 라이선스는 꼭 지켜 주세요). 공개할 때는 `Made with Painterly 2.5D by @KanaWorks_AI`를 넣어 주세요([크레딧 표기](#-크레딧-표기)).
+네. Painterly 2.5D로 만든 렌더 이미지와 영상은 여러분의 작품이에요. GPL은 애드온 코드에만 적용되고, 애드온으로 만든 결과물에는 적용되지 않습니다(사용한 모델과 텍스처의 라이선스는 꼭 지켜 주세요). 크레딧은 필요 없지만 `Made with Painterly 2.5D by @KanaWorks_AI`를 넣어 주시면 기뻐요.
 </details>
 
 ## 📝 크레딧 표기
 
-Painterly 2.5D는 무료이고 상업적으로도 쓸 수 있어요. 대신 크레딧 표기를 부탁드려요.
+Painterly 2.5D는 무료이고 상업적으로도 쓸 수 있어요.
 
-**만든 이미지나 영상을 공개할 때**는 게시글, 영상 설명란 또는 크레딧에 넣어 주세요.
-
-```
-Made with Painterly 2.5D by @KanaWorks_AI
-```
-
-**애드온을 재배포·수정·번들할 때**(포크, 수정판, 이식판, 이 애드온이 포함된 팩이나 제품 등)는 아래 문구를 애드온 설명과 문서에 그대로 남기는 것이 **필수**입니다(GPL-3.0 제7조 (b)에 따른 추가 조항, 자세한 내용은 [NOTICE.md](NOTICE.md)).
+**애드온을 재배포·수정·번들할 때**(포크, 수정판, 이식판, 이 애드온이 포함된 팩이나 제품 등, 유료·무료 불문)는 아래 문구를 애드온 설명과 문서에 그대로 남기는 것이 **필수**입니다(GPL-3.0 제7조 (b)에 따른 추가 조항, 자세한 내용은 [NOTICE.md](NOTICE.md)).
 
 ```
 Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+**만든 이미지나 영상**에는 크레딧이 필요 없어요. 원하신다면 게시글이나 설명란에 이 문구를 넣어 주시면 정말 기쁠 거예요.
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
 ```
 
 ## ⭐ 스타로 응원하기

@@ -199,23 +199,23 @@ Se inserta un grupo de nodos toon y se recuerda la conexión original. *Revert P
 <details>
 <summary><b>¿Puedo usar las imágenes y los vídeos con fines comerciales?</b></summary>
 
-Sí. Los renders y vídeos que hagas con Painterly 2.5D son obra tuya. La GPL cubre el código del add-on, no lo que creas con él (eso sí, respeta las licencias de los modelos y texturas que uses). Al publicarlos, añade `Made with Painterly 2.5D by @KanaWorks_AI` (consulta [Créditos](#-créditos)).
+Sí. Los renders y vídeos que hagas con Painterly 2.5D son obra tuya. La GPL cubre el código del add-on, no lo que creas con él (eso sí, respeta las licencias de los modelos y texturas que uses). No hace falta dar créditos, pero `Made with Painterly 2.5D by @KanaWorks_AI` siempre es bienvenido.
 </details>
 
 ## 📝 Créditos
 
-Painterly 2.5D es gratis, también para uso comercial. A cambio, te pedimos que lo acredites.
+Painterly 2.5D es gratis, también para uso comercial.
 
-**Cuando publiques imágenes o vídeos hechos con él**, pon esto en la publicación, la descripción del vídeo o los créditos:
-
-```
-Made with Painterly 2.5D by @KanaWorks_AI
-```
-
-**Cuando redistribuyas, modifiques o incluyas el add-on en otro producto** (forks, versiones modificadas, ports, packs o productos que lo incluyan), es **obligatorio** mantener esta línea, sin cambios, en la descripción del add-on y en su documentación (término adicional de la sección 7(b) de la GPLv3; consulta [NOTICE.md](NOTICE.md)):
+**Cuando redistribuyas, modifiques o incluyas el add-on en otro producto** (forks, versiones modificadas, ports, packs o productos que lo incluyan, gratis o de pago), es **obligatorio** mantener esta línea, sin cambios, en la descripción del add-on y en su documentación (término adicional de la sección 7(b) de la GPLv3; consulta [NOTICE.md](NOTICE.md)):
 
 ```
 Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+**Las imágenes y vídeos que hagas** no necesitan créditos. Si quieres añadirlos, esta línea en la publicación o la descripción es muy bienvenida:
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
 ```
 
 ## ⭐ Apóyalo con una estrella
