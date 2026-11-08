@@ -9,6 +9,7 @@
   <img alt="AI agent ready" src="https://img.shields.io/badge/AI_agent-ready-19b8d6?style=flat-square">
   <img alt="Free" src="https://img.shields.io/badge/price-free-2ea44f?style=flat-square">
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-6b4dff?style=flat-square"></a>
+  <a href="NOTICE.md"><img alt="Credit: KanaWorks_AI" src="https://img.shields.io/badge/credit-%40KanaWorks__AI-ff6aa2?style=flat-square"></a>
   <a href="https://github.com/kanaworksai-hue/painterly-25d/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/kanaworksai-hue/painterly-25d?style=flat-square&logo=github&label=stars&color=f5c518"></a>
 </p>
 
@@ -198,8 +199,24 @@ flowchart LR
 <details>
 <summary><b>做出来的图片和视频可以商用吗？</b></summary>
 
-可以。用 Painterly 2.5D 渲染的图片和视频是你自己的作品，可以自由使用。GPL 只适用于插件本身的代码，不适用于用它做出来的作品（使用的模型和贴图请遵守它们各自的授权）。
+可以。用 Painterly 2.5D 渲染的图片和视频是你自己的作品，可以自由使用。GPL 只适用于插件本身的代码，不适用于用它做出来的作品（使用的模型和贴图请遵守它们各自的授权）。 发布时请加上 `Made with Painterly 2.5D by @KanaWorks_AI`（见[署名](#-署名)）。
 </details>
+
+## 📝 署名
+
+Painterly 2.5D 免费，可以商用。作为交换，请注明出处。
+
+**发布用它做出的图片或视频时**，请在正文、视频简介或片尾加上：
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
+```
+
+**再分发、修改或打包本插件时**（fork、修改版、移植版、包含它的合集或产品等），**必须**在插件说明和文档中原样保留下面这一行（GPL-3.0 第 7 条 (b) 附加条款，详见 [NOTICE.md](NOTICE.md)）：
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
 
 ## ⭐ 点个 Star 支持一下
 
@@ -245,7 +262,7 @@ agent/painterly_agent.py  给 AI 智能体用的命令行
 
 ## 📄 许可证与致谢
 
-- **本插件：** Copyright © 2026 东京AI映像合同会社（Tokyo AI Visuals LLC），以 [GPL-3.0-or-later](LICENSE) 发布。
+- **本插件：** Copyright © 2026 东京AI映像合同会社（Tokyo AI Visuals LLC），以 [GPL-3.0-or-later](LICENSE) 发布（附加条款：再分发时须保留署名，详见 [NOTICE.md](NOTICE.md)）。
 - **品牌：** KanaWorks_AI 的名称、logo 和 Kana 形象的权利归东京AI映像合同会社所有，**不在** GPL 授权范围内。详见 [docs/brand](docs/brand/README.md)。
 - 参考了 Blender 社区公开分享的 NPR 制作思路（Shader to RGB 卡通着色、桑原滤镜合成、反向外壳描边）。
 - **Blender** 是 Blender Foundation 的商标。本项目为独立项目，与 Blender Foundation 没有合作关系，也未获其认可。

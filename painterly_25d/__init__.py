@@ -1,4 +1,8 @@
+# SPDX-FileCopyrightText: 2026 東京AI映像合同会社 (Tokyo AI Visuals LLC)
 # SPDX-License-Identifier: GPL-3.0-or-later
+# Additional term (GPLv3 section 7(b)), see NOTICE.md: if you convey this add-on or a work based on it,
+# keep this attribution in its description and documentation:
+#   Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
 """Painterly 2.5D — hand-painted / 2.5D NPR look for Blender 5.x (EEVEE).
 
   1. Toon material : normalised cel split, brush dabs only around the terminator,

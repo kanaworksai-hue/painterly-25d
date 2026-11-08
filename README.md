@@ -9,6 +9,7 @@
   <img alt="AI agent ready" src="https://img.shields.io/badge/AI_agent-ready-19b8d6?style=flat-square">
   <img alt="Free" src="https://img.shields.io/badge/price-free-2ea44f?style=flat-square">
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-6b4dff?style=flat-square"></a>
+  <a href="NOTICE.md"><img alt="Credit: KanaWorks_AI" src="https://img.shields.io/badge/credit-%40KanaWorks__AI-ff6aa2?style=flat-square"></a>
   <a href="https://github.com/kanaworksai-hue/painterly-25d/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/kanaworksai-hue/painterly-25d?style=flat-square&logo=github&label=stars&color=f5c518"></a>
 </p>
 
@@ -198,8 +199,24 @@ Claude Code や Codex のような、パソコンを操作できる AI エージ
 <details>
 <summary><b>作った画像や動画は商用で使えますか？</b></summary>
 
-はい。Painterly 2.5D で作ったレンダリング画像や動画は、あなたの作品として自由に使えます。GPL が適用されるのはアドオン本体のコードで、それを使って作った作品には及びません（使ったモデルやテクスチャのライセンスには従ってください）。
+はい。Painterly 2.5D で作ったレンダリング画像や動画は、あなたの作品として自由に使えます。GPL が適用されるのはアドオン本体のコードで、それを使って作った作品には及びません（使ったモデルやテクスチャのライセンスには従ってください）。 公開するときは `Made with Painterly 2.5D by @KanaWorks_AI` と入れてください（[クレジット表記](#-クレジット表記)）。
 </details>
+
+## 📝 クレジット表記
+
+Painterly 2.5D は無料で、商用でも使えます。そのかわり、次のクレジット表記をお願いしています。
+
+**作った画像や動画を公開するとき**は、投稿文・動画の概要欄・クレジットに入れてください。
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
+```
+
+**アドオンを再配布・改変・同梱するとき**（フォーク、改変版、移植版、パックや製品への同梱など）は、次の表記をアドオンの説明文とドキュメントにそのまま残すことが**必須**です（GPL-3.0 第7条(b)に基づく追加条項。詳しくは [NOTICE.md](NOTICE.md)）。
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
 
 ## ⭐ Star で応援する
 
@@ -245,7 +262,7 @@ agent/painterly_agent.py  AI エージェント用のコマンドライン
 
 ## 📄 ライセンスとクレジット
 
-- **このアドオン：** Copyright © 2026 東京AI映像合同会社。[GPL-3.0-or-later](LICENSE) で公開しています。
+- **このアドオン：** Copyright © 2026 東京AI映像合同会社。[GPL-3.0-or-later](LICENSE) で公開しています（再配布時のクレジット表記を求める追加条項付き。[NOTICE.md](NOTICE.md)）。
 - **ブランド：** KanaWorks_AI の名称、ロゴ、キャラクター Kana の権利は東京AI映像合同会社に帰属し、GPL の対象**外**です。詳しくは [docs/brand](docs/brand/README.md) を見てください。
 - Blender コミュニティで公開されている NPR の解説（Shader to RGB のセル表現、桑原コンポジット、反転ハルの輪郭線）を参考にしています。
 - **Blender** は Blender Foundation の商標です。本プロジェクトは独立したプロジェクトで、Blender Foundation とは提携しておらず、承認も受けていません。

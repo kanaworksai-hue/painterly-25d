@@ -9,6 +9,7 @@
   <img alt="AI agent ready" src="https://img.shields.io/badge/AI_agent-ready-19b8d6?style=flat-square">
   <img alt="Free" src="https://img.shields.io/badge/price-free-2ea44f?style=flat-square">
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-6b4dff?style=flat-square"></a>
+  <a href="NOTICE.md"><img alt="Credit: KanaWorks_AI" src="https://img.shields.io/badge/credit-%40KanaWorks__AI-ff6aa2?style=flat-square"></a>
   <a href="https://github.com/kanaworksai-hue/painterly-25d/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/kanaworksai-hue/painterly-25d?style=flat-square&logo=github&label=stars&color=f5c518"></a>
 </p>
 
@@ -198,8 +199,24 @@ Se inserta un grupo de nodos toon y se recuerda la conexión original. *Revert P
 <details>
 <summary><b>¿Puedo usar las imágenes y los vídeos con fines comerciales?</b></summary>
 
-Sí. Los renders y vídeos que hagas con Painterly 2.5D son obra tuya. La GPL cubre el código del add-on, no lo que creas con él (eso sí, respeta las licencias de los modelos y texturas que uses).
+Sí. Los renders y vídeos que hagas con Painterly 2.5D son obra tuya. La GPL cubre el código del add-on, no lo que creas con él (eso sí, respeta las licencias de los modelos y texturas que uses). Al publicarlos, añade `Made with Painterly 2.5D by @KanaWorks_AI` (consulta [Créditos](#-créditos)).
 </details>
+
+## 📝 Créditos
+
+Painterly 2.5D es gratis, también para uso comercial. A cambio, te pedimos que lo acredites.
+
+**Cuando publiques imágenes o vídeos hechos con él**, pon esto en la publicación, la descripción del vídeo o los créditos:
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
+```
+
+**Cuando redistribuyas, modifiques o incluyas el add-on en otro producto** (forks, versiones modificadas, ports, packs o productos que lo incluyan), es **obligatorio** mantener esta línea, sin cambios, en la descripción del add-on y en su documentación (término adicional de la sección 7(b) de la GPLv3; consulta [NOTICE.md](NOTICE.md)):
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
 
 ## ⭐ Apóyalo con una estrella
 
@@ -245,7 +262,7 @@ agent/painterly_agent.py  línea de comandos para agentes de IA
 
 ## 📄 Licencia y créditos
 
-- **Este add-on:** Copyright © 2026 東京AI映像合同会社 (Tokyo AI Visuals LLC), publicado bajo [GPL-3.0-or-later](LICENSE).
+- **Este add-on:** Copyright © 2026 東京AI映像合同会社 (Tokyo AI Visuals LLC), publicado bajo [GPL-3.0-or-later](LICENSE) (con un término adicional que exige esta atribución al redistribuirlo; consulta [NOTICE.md](NOTICE.md)).
 - **Marca:** el nombre KanaWorks_AI, el logotipo y el personaje Kana pertenecen a Tokyo AI Visuals LLC y **no** están cubiertos por la GPL. Consulta [docs/brand](docs/brand/README.md).
 - Inspirado en análisis públicos de NPR de la comunidad de Blender (sombreado cel con Shader to RGB, composición con Kuwahara, contornos de casco invertido).
 - **Blender** es una marca registrada de la Blender Foundation. Este es un proyecto independiente, sin afiliación ni respaldo de la Blender Foundation.

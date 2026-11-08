@@ -1,0 +1,58 @@
+# Painterly 2.5D — attribution notice / クレジット表記
+
+Copyright © 2026 東京AI映像合同会社 (Tokyo AI Visuals LLC). Licensed under [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
+
+## Additional term under GPLv3 section 7(b)
+
+If you convey this add-on or any work based on it — a modified version, a fork, a port, or a bundle, pack or product
+that includes it, free or paid — you must preserve the following attribution, unchanged, in the add-on's
+description or About text **and** in its documentation (README, store page or equivalent):
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+This is a "requirement to preserve author attributions" permitted by section 7(b) of the GNU General Public License
+version 3. It adds no other restriction: everything else is plain GPL-3.0-or-later.
+
+## Images and videos you make with it
+
+Renders, images and videos you create with Painterly 2.5D are your own work, free to use commercially. When you
+publish them, please add this credit in the post, the video description or the credits:
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
+```
+
+It isn't a legal condition for your renders, but it is how this free add-on keeps getting made.
+
+## Name and logo
+
+The KanaWorks_AI name, logo and the character Kana are not licensed under the GPL. See [docs/brand](https://github.com/kanaworksai-hue/painterly-25d/blob/main/docs/brand/README.md).
+You may write the name for the credit lines above.
+
+---
+
+## 日本語
+
+**GPL-3.0 第7条(b)に基づく追加条項：** このアドオン、またはこれをもとにしたもの（改変版、フォーク、移植版、これを含むパック・製品など。有償・無償を問いません）を配布するときは、アドオンの説明文（About）**と**ドキュメント（README、ストアページなど）に、次の表記をそのまま残してください。
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+これ以外の条件はなく、すべて GPL-3.0-or-later のとおりです。
+
+**作った画像・動画：** Painterly 2.5D でレンダリングした作品はあなたのもので、商用でも自由に使えます。公開するときは、投稿文・概要欄・クレジットに `Made with Painterly 2.5D by @KanaWorks_AI` と入れてください。作品への法的な条件ではありませんが、この無料アドオンを作り続ける力になります。
+
+## 简体中文
+
+**GPL-3.0 第 7 条 (b) 附加条款：** 分发本插件或基于它的作品（修改版、fork、移植版、包含它的合集或产品，无论收费与否）时，必须在插件说明（About）**和**文档（README、商店页面等）中原样保留以下署名：
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
+
+除此之外没有其他限制，其余均按 GPL-3.0-or-later。
+
+**你做出的图片和视频：** 用 Painterly 2.5D 渲染的作品属于你，可以自由商用。发布时请在正文、视频简介或片尾加上 `Made with Painterly 2.5D by @KanaWorks_AI`。这不是对作品的法律条件，但能支持这个免费插件继续更新。

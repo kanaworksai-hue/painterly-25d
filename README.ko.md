@@ -9,6 +9,7 @@
   <img alt="AI agent ready" src="https://img.shields.io/badge/AI_agent-ready-19b8d6?style=flat-square">
   <img alt="Free" src="https://img.shields.io/badge/price-free-2ea44f?style=flat-square">
   <a href="LICENSE"><img alt="License: GPL-3.0-or-later" src="https://img.shields.io/badge/license-GPL--3.0--or--later-6b4dff?style=flat-square"></a>
+  <a href="NOTICE.md"><img alt="Credit: KanaWorks_AI" src="https://img.shields.io/badge/credit-%40KanaWorks__AI-ff6aa2?style=flat-square"></a>
   <a href="https://github.com/kanaworksai-hue/painterly-25d/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/kanaworksai-hue/painterly-25d?style=flat-square&logo=github&label=stars&color=f5c518"></a>
 </p>
 
@@ -198,8 +199,24 @@ Claude Code나 Codex처럼 컴퓨터를 조작할 수 있는 AI 에이전트에�
 <details>
 <summary><b>만든 이미지나 영상을 상업적으로 써도 되나요?</b></summary>
 
-네. Painterly 2.5D로 만든 렌더 이미지와 영상은 여러분의 작품이에요. GPL은 애드온 코드에만 적용되고, 애드온으로 만든 결과물에는 적용되지 않습니다(사용한 모델과 텍스처의 라이선스는 꼭 지켜 주세요).
+네. Painterly 2.5D로 만든 렌더 이미지와 영상은 여러분의 작품이에요. GPL은 애드온 코드에만 적용되고, 애드온으로 만든 결과물에는 적용되지 않습니다(사용한 모델과 텍스처의 라이선스는 꼭 지켜 주세요). 공개할 때는 `Made with Painterly 2.5D by @KanaWorks_AI`를 넣어 주세요([크레딧 표기](#-크레딧-표기)).
 </details>
+
+## 📝 크레딧 표기
+
+Painterly 2.5D는 무료이고 상업적으로도 쓸 수 있어요. 대신 크레딧 표기를 부탁드려요.
+
+**만든 이미지나 영상을 공개할 때**는 게시글, 영상 설명란 또는 크레딧에 넣어 주세요.
+
+```
+Made with Painterly 2.5D by @KanaWorks_AI
+```
+
+**애드온을 재배포·수정·번들할 때**(포크, 수정판, 이식판, 이 애드온이 포함된 팩이나 제품 등)는 아래 문구를 애드온 설명과 문서에 그대로 남기는 것이 **필수**입니다(GPL-3.0 제7조 (b)에 따른 추가 조항, 자세한 내용은 [NOTICE.md](NOTICE.md)).
+
+```
+Painterly 2.5D by KanaWorks_AI (@KanaWorks_AI) — https://github.com/kanaworksai-hue/painterly-25d
+```
 
 ## ⭐ 스타로 응원하기
 
@@ -245,7 +262,7 @@ agent/painterly_agent.py  command line for AI agents
 
 ## 📄 라이선스 및 크레딧
 
-- **이 애드온:** Copyright © 2026 東京AI映像合同会社 (Tokyo AI Visuals LLC), [GPL-3.0-or-later](LICENSE)로 배포합니다.
+- **이 애드온:** Copyright © 2026 東京AI映像合同会社 (Tokyo AI Visuals LLC), [GPL-3.0-or-later](LICENSE)로 배포합니다 (재배포 시 크레딧 표기를 요구하는 추가 조항 포함, [NOTICE.md](NOTICE.md)).
 - **브랜드:** KanaWorks_AI라는 이름과 로고, 캐릭터 Kana는 Tokyo AI Visuals LLC의 소유이며 GPL 적용 대상이 **아닙니다**. 자세한 내용은 [docs/brand](docs/brand/README.md)를 참고하세요.
 - Blender 커뮤니티에 공개된 NPR 기법 해설(Shader to RGB 셀 셰이딩, Kuwahara 컴포지팅, 인버티드 헐 외곽선)에서 영감을 받았습니다.
 - **Blender**는 Blender Foundation의 상표입니다. 이 프로젝트는 독립 프로젝트이며, Blender Foundation과 제휴하거나 보증을 받은 것이 아닙니다.
